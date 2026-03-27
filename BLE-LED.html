@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ESP32 LED Control</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 400px;
+            margin: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        button {
+            font-size: 20px;
+            padding: 12px 24px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        .btn-on {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-off {
+            background: #f44336;
+            color: white;
+        }
+        .btn-connect {
+            background: #2196F3;
+            color: white;
+            margin-top: 20px;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        .disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎛️ ESP32 LED Controller</h1>
+        
+        <div id="status" class="disconnected">
+            Status: Belum terhubung
+        </div>
+        
+        <button class="btn-on" id="btnOn" disabled>🔴 ON</button>
+        <button class="btn-off" id="btnOff" disabled>⚫ OFF</button>
+        <br>
+        <button class="btn-connect" id="btnConnect">🔌 Hubungkan ke ESP32</button>
+    </div>
+
+    <script>
+        // UUID yang sesuai dengan program ESP32
+        const SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+        const RX_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+        
+        let device = null;
+        let rxCharacteristic = null;
+        let connected = false;
+        
+        const btnConnect = document.getElementById('btnConnect');
+        const btnOn = document.getElementById('btnOn');
+        const btnOff = document.getElementById('btnOff');
+        const statusDiv = document.getElementById('status');
+        
+        function updateUI() {
+            if (connected) {
+                statusDiv.textContent = 'Status: ✅ Terhubung ke ESP32';
+                statusDiv.className = 'connected';
+                btnOn.disabled = false;
+                btnOff.disabled = false;
+                btnConnect.textContent = '🔌 Putuskan Koneksi';
+            } else {
+                statusDiv.textContent = 'Status: ❌ Belum terhubung';
+                statusDiv.className = 'disconnected';
+                btnOn.disabled = true;
+                btnOff.disabled = true;
+                btnConnect.textContent = '🔌 Hubungkan ke ESP32';
+            }
+        }
+        
+        async function sendCommand(command) {
+            if (!rxCharacteristic || !connected) {
+                alert('Belum terhubung ke ESP32!');
+                return;
+            }
+            
+            try {
+                const encoder = new TextEncoder();
+                await rxCharacteristic.writeValue(encoder.encode(command));
+                console.log('Perintah dikirim:', command);
+            } catch (error) {
+                console.error('Gagal kirim perintah:', error);
+                alert('Gagal mengirim perintah: ' + error.message);
+            }
+        }
+        
+        btnOn.onclick = () => sendCommand('on');
+        btnOff.onclick = () => sendCommand('off');
+        
+        btnConnect.onclick = async () => {
+            if (connected && device) {
+                // Putuskan koneksi
+                try {
+                    await device.gatt.disconnect();
+                    connected = false;
+                    rxCharacteristic = null;
+                    updateUI();
+                } catch (error) {
+                    console.error('Error disconnect:', error);
+                }
+                return;
+            }
+            
+            // Koneksi baru
+            try {
+                // Minta perangkat BLE
+                device = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: 'ESP32' }],
+                    optionalServices: [SERVICE_UUID]
+                });
+                
+                // Koneksi ke GATT server
+                const server = await device.gatt.connect();
+                
+                // Dapatkan service
+                const service = await server.getPrimaryService(SERVICE_UUID);
+                
+                // Dapatkan characteristic untuk write
+                rxCharacteristic = await service.getCharacteristic(RX_UUID);
+                
+                connected = true;
+                updateUI();
+                
+                console.log('Terhubung ke:', device.name);
+                
+                // Handle disconnect
+                device.addEventListener('gattserverdisconnected', () => {
+                    connected = false;
+                    rxCharacteristic = null;
+                    updateUI();
+                    console.log('Terputus dari ESP32');
+                });
+                
+            } catch (error) {
+                console.error('Koneksi gagal:', error);
+                alert('Gagal koneksi: ' + error.message);
+                connected = false;
+                rxCharacteristic = null;
+                updateUI();
+            }
+        };
+        
+        // Cek dukungan Web Bluetooth
+        if (!navigator.bluetooth) {
+            alert('Browser Anda tidak mendukung Web Bluetooth.\nGunakan Chrome, Edge, atau Opera.');
+            btnConnect.disabled = true;
+        } else {
+            console.log('Web Bluetooth didukung');
+        }
+        
+        updateUI();
+    </script>
+</body>
+</html>
