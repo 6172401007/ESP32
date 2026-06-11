@@ -2,8 +2,6 @@
 import machine
 import time
 import _thread
-# Asumsi: Kita memiliki modul C kustom 'a2dp_internal'
-# yang mampu memetakan audio stream langsung ke DAC hardware
 import a2dp_internal 
 
 # --- KONFIGURASI INTERNAL DAC (GPIO 25 & 26) ---
