@@ -39,4 +39,35 @@ Tabel perbandingan teknis antara penggunaan DAC internal bawaan ESP32 dan modul 
 | **GPIO 26** | Seri dengan **Resistor 12k Ohm** | Input Amplifier (R / Kanan) | Output DAC Channel 2 (8-Bit) |
 | **GND** | Langsung | GND Amplifier | Referensi Ground |
 
-*(Bersambung ke Part 2: Solusi DAC Eksternal MAX98357A beserta skema antarmuka UI)*
+## 4. Solusi Final: Implementasi Eksternal DAC (I2S) dan Kendali Volume
+Bagian ini mendokumentasikan implementasi akhir menggunakan transmisi digital murni melalui bus I2S menuju modul DAC eksternal, lengkap dengan antarmuka kendali volume fisik. Penggunaan resistor 12k Ohm dari percobaan sebelumnya ditiadakan sepenuhnya.
+### Daftar Kebutuhan Komponen
+
+| Komponen | Jumlah | Keterangan |
+| :--- | :--- | :--- |
+| **ESP32 Dev Board** | 1 | Mikrokontroler utama |
+| **MAX98357A Module** | 1 | I2S DAC dan Amplifier Kelas D (Maksimal 3W) |
+| **KY-040 Rotary Encoder** | 1 | Modul antarmuka kendali volume digital |
+| **Speaker Pasif** | 1 | Impedansi 4 - 8 Ohm | <br> ### Skema Sambungan (Wiring) <br> Koneksi fisik dibagi menjadi dua segmen independen: jalur transmisi data I2S dan jalur logika antarmuka volume. <br> #### A. Wiring I2S Audio (ESP32 ke MAX98357A) <br> Jalur transmisi ini menggunakan logika digital 3.3V. Hubungkan secara langsung tanpa komponen pasif di tengah jalur.
+| ESP32 Pin | MAX98357A Pin | Keterangan Fungsi |
+| :--- | :--- | :--- |
+| **GPIO 27** | BCLK | Bit Clock (Sinkronisasi per bit data) |
+| **GPIO 26** | LRC | Left/Right Clock (Word Select) |
+| **GPIO 25** | DIN | Data Input (Aliran sinyal audio digital 16-bit) |
+| **5V / VIN** | VIN | Catu daya operasional modul DAC/Amp |
+| **GND** | GND | Referensi Ground bersama | <br> *(Catatan: Pin SD dan GAIN pada MAX98357A dibiarkan tidak terhubung. Konfigurasi default ini akan mencampur sinyal stereo menjadi mono standar dengan penguatan internal 9dB).* <br> #### B. Wiring Antarmuka Volume (Rotary Encoder) <br> Sumber tegangan utama untuk modul KY-040 wajib menggunakan pin 3.3V dari ESP32 untuk menghindari masuknya tegangan 5V ke dalam pin GPIO mikrokontroler.
+| ESP32 Pin | Modul Eksternal | Pin Modul | Parameter Fungsi |
+| :--- | :--- | :--- | :--- |
+| **GPIO 18** | KY-040 | CLK | Input sinyal *Quadrature A* (Clock) |
+| **GPIO 19** | KY-040 | DT | Input sinyal *Quadrature B* (Data/Arah) |
+| **GPIO 21** | KY-040 | SW | Input status tombol tekan encoder |
+| **3.3V** | KY-040 | + (VCC) | Suplai daya referensi *Pull-Up* |
+| **GND** | KY-040 | GND | Referensi Ground KY-040 |
+
+## 5. Logika Fungsi Kendali Volume (UI)
+Perangkat lunak membaca input dari modul KY-040 untuk mengeksekusi parameter instruksi audio berikut:
+ 1. **Volume Control (KY-040 Putar):**
+   Mendeteksi arah putaran untuk menyesuaikan nilai amplitudo audio. Kode menerapkan algoritma *Exponential Moving Average* (EMA) agar transisi perubahan volume terjadi secara halus (*Soft Fading*), mencegah lonjakan output mendadak yang dapat merusak speaker.
+ 2. **Soft Mute (KY-040 Klik):**
+   Penekanan kenop volume memicu rutin *Mute*. Sinyal diturunkan ke nilai nol secara bertahap (*ramp-down*) dan tidak dipotong paksa. Memutar kenop secara otomatis akan membatalkan status *Mute* dan mengembalikan volume ke level sesuai putaran baru (*Auto-Unmute*).
+*(Bersambung ke Part 3: Integrasi Push Button untuk Mode WLAN, Soft Reboot, dan Manajemen Daya Deep Sleep)*
