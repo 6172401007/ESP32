@@ -44,7 +44,7 @@ Resistor 12k Ohm dipasang secara seri pada jalur output audio. Tidak ada tombol 
 | **GPIO 26** | Seri dengan **Resistor 12k \Omega** | Input Amplifier (R / Kanan) | Output DAC Channel 2 (8-Bit) |
 | **GND** | Langsung | GND Amplifier | Referensi Ground |
 
-## 4. Solusi: Implementasi Eksternal DAC (I2S) dan Kendali Volume
+## 4. Implementasi Eksternal DAC (I2S) dan Kendali Volume
 Bagian ini mendokumentasikan implementasi akhir menggunakan transmisi digital murni melalui bus I2S menuju modul DAC eksternal, lengkap dengan antarmuka kendali volume fisik. Penggunaan resistor 12k Ohm dari percobaan sebelumnya ditiadakan sepenuhnya.
 ### Daftar Kebutuhan Komponen
 
