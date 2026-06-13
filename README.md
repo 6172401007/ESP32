@@ -35,8 +35,8 @@ Tabel perbandingan teknis antara penggunaan DAC internal bawaan ESP32 dan modul 
 ### Skema Sambungan (Wiring) <br> Resistor 12k Ohm dipasang secara seri pada jalur output audio. Tidak ada tombol atau *rotary encoder* pada tahap ini.
 | ESP32 Pin Output | Pemasangan Pasif | Tujuan | Keterangan |
 | :--- | :--- | :--- | :--- |
-| **GPIO 25** | Seri dengan **Resistor 12k \Omega** | Input Amplifier (L / Kiri) | Output DAC Channel 1 (8-Bit) |
-| **GPIO 26** | Seri dengan **Resistor 12k \Omega** | Input Amplifier (R / Kanan) | Output DAC Channel 2 (8-Bit) |
+| **GPIO 25** | Seri dengan **Resistor 12k Ohm ** | Input Amplifier (L / Kiri) | Output DAC Channel 1 (8-Bit) |
+| **GPIO 26** | Seri dengan **Resistor 12k Ohm** | Input Amplifier (R / Kanan) | Output DAC Channel 2 (8-Bit) |
 | **GND** | Langsung | GND Amplifier | Referensi Ground |
 
 *(Bersambung ke Part 2: Solusi DAC Eksternal MAX98357A beserta skema antarmuka UI)*
