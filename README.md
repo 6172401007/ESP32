@@ -48,7 +48,8 @@ Bagian ini mendokumentasikan implementasi akhir menggunakan transmisi digital mu
 | **ESP32 Dev Board** | 1 | Mikrokontroler utama |
 | **MAX98357A Module** | 1 | I2S DAC dan Amplifier Kelas D (Maksimal 3W) |
 | **KY-040 Rotary Encoder** | 1 | Modul antarmuka kendali volume digital |
-| **Speaker Pasif** | 1 | Impedansi 4 - 8 Ohm | <br> ### Skema Sambungan (Wiring) <br> Koneksi fisik dibagi menjadi dua segmen independen: jalur transmisi data I2S dan jalur logika antarmuka volume. <br> #### A. Wiring I2S Audio (ESP32 ke MAX98357A) <br> Jalur transmisi ini menggunakan logika digital 3.3V. Hubungkan secara langsung tanpa komponen pasif di tengah jalur.
+| **Speaker Pasif** | 1 | Impedansi 4 - 8 Ohm | <br> ### Skema Sambungan (Wiring) <br> Koneksi fisik dibagi menjadi dua segmen independen: jalur transmisi data I2S dan jalur logika antarmuka volume. 
+#### A. Wiring I2S Audio (ESP32 ke MAX98357A) Jalur transmisi ini menggunakan logika digital 3.3V. Hubungkan secara langsung tanpa komponen pasif di tengah jalur.
 | ESP32 Pin | MAX98357A Pin | Keterangan Fungsi |
 | :--- | :--- | :--- |
 | **GPIO 27** | BCLK | Bit Clock (Sinkronisasi per bit data) |
