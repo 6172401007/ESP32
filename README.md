@@ -45,10 +45,10 @@ Pada fase ini, **semua antarmuka kendali (seperti volume fisik atau tombol mode)
 | **GPIO 26** | \rightarrow **Resistor 12k \Omega** \rightarrow | Input Audio (Kanan / R) | Sinyal Analog Saluran Kanan (8-Bit) |
 | **GND** | *(Sambungan langsung kabel)* | GND Amplifier/Speaker | Referensi Nol Volt (Penutup Sirkuit) |
 
-## 🚀 Part 2: Solusi Final (Transmisi Digital I2S via DAC Eksternal)
+## 🚀 Part 2:Transmisi Digital I2S via DAC Eksternal
 Melanjutkan dari Eksperimen 1, kita menyadari bahwa DAC internal 8-bit ESP32 memiliki keterbatasan hukum fisika yang menyebabkan desis kuantisasi dan kurangnya daya. Oleh karena itu, pada tahap final ini, kita melakukan rekonstruksi arsitektur menuju sistem digital murni (*End-to-End Digital Audio*).
 Pada fase final ini, **penggunaan Resistor 12k Ohm dihilangkan sepenuhnya**. Data audio tidak lagi diubah menjadi analog di dalam ESP32, melainkan dikirim dalam bentuk biner mentah (16-bit) melalui bus I2S menuju modul DAC Eksternal (MAX98357A). Sistem ini juga mengintegrasikan *Rotary Encoder* untuk kendali volume presisi dan tombol fisik untuk manajemen daya/mode.
-### 📦 Daftar Barang yang Dibutuhkan (Solusi Final)
+### 📦 Daftar Barang yang Dibutuhkan
 
 | Komponen | Jumlah | Fungsi |
 | :--- | :--- | :--- |
@@ -57,7 +57,9 @@ Pada fase final ini, **penggunaan Resistor 12k Ohm dihilangkan sepenuhnya**. Dat
 | **KY-040 Rotary Encoder** | 1 | Kendali volume putar (*Quadrature*) dan *Soft Mute* |
 | **Tactile Push Button** | 1 | Tombol pengatur Mode (WLAN / Bluetooth) & *Deep Sleep* |
 | **Speaker Pasif** | 1 | Pengeras suara 4 Ohm / 8 Ohm (Maksimal 3 Watt) |
-| **Kabel Jumper** | Secukupnya | Menghubungkan jalur komunikasi digital dan daya | <br> ### 🔌 Skema Perakitan (Wiring) Solusi Final <br> Perakitan dipecah menjadi dua segmen: **Jalur Audio Digital (I2S)** dan **Jalur Kendali Antarmuka (UI)**. Pastikan setiap sambungan kuat karena komunikasi I2S membutuhkan integritas sinyal berkecepatan tinggi. <br> #### 1. Wiring Jalur Audio Digital (I2S ke MAX98357A) <br> Jalur ini murni mengalirkan data logika (3.3V). Pin keluaran dari ESP32 langsung dihubungkan ke pin input MAX98357A tanpa komponen pasif (tanpa resistor/kapasitor) di tengah jalur.
+| **Kabel Jumper** | Secukupnya | Menghubungkan jalur komunikasi digital dan daya | 
+### 🔌 Skema Perakitan (Wiring) Solusi Final <br> Perakitan dipecah menjadi dua segmen: **Jalur Audio Digital (I2S)** dan **Jalur Kendali Antarmuka (UI)**. Pastikan setiap sambungan kuat karena komunikasi I2S membutuhkan integritas sinyal berkecepatan tinggi. 
+#### 1. Wiring Jalur Audio Digital (I2S ke MAX98357A) <br> Jalur ini murni mengalirkan data logika (3.3V). Pin keluaran dari ESP32 langsung dihubungkan ke pin input MAX98357A tanpa komponen pasif (tanpa resistor/kapasitor) di tengah jalur.
 | ESP32 Pin | MAX98357A Pin | Fungsi Komunikasi I2S |
 | :--- | :--- | :--- |
 | **GPIO 27** | BCLK | *Bit Clock* (Metronom sinkronisasi data per bit) |
