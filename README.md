@@ -3,41 +3,53 @@ Selamat datang di panduan proyek ESP32 Audio Receiver. Repositori ini berisi kod
 ## 💻 Panduan Instalasi Lingkungan Pengembangan
 Pilih salah satu metode pengembangan di bawah ini sesuai dengan bahasa pemrograman yang ingin Anda gunakan.
 ### Opsi A: Instalasi C++ via Visual Studio Code (PlatformIO)
-Ini adalah metode paling stabil karena memberikan akses tingkat rendah ke *hardware* ESP32 untuk *streaming* audio berkecepatan tinggi.
+Ini adalah metode paling stabil karena memberikan akses tingkat rendah ke perangkat keras ESP32 untuk pemrosesan audio berkecepatan tinggi.
  1. **Unduh Editor:** Instal Visual Studio Code.
- 2. **Instal Ekstensi:** Buka VS Code, masuk ke tab *Extensions* (Ctrl+Shift+X), cari **PlatformIO IDE**, lalu instal. Tunggu hingga proses intalasi komponen *core* selesai dan *restart* VS Code.
- 3. **Buka Proyek:** Klik ikon PlatformIO (kepala semut) di menu kiri, pilih **Open Project**, dan arahkan ke folder *repository* ini.
- 4. **Konfigurasi Otomatis:** PlatformIO akan secara otomatis membaca *file* platformio.ini untuk mengatur *overclock* CPU ke 240MHz dan mengunduh pustaka (seperti ESP32-A2DP).
- 5. **Build & Upload:** Sambungkan ESP32, klik tombol **Build (Tanda Centang)** di baris bawah untuk memverifikasi, lalu klik **Upload (Tanda Panah Kanan)** untuk memasukkan kode.
+ 2. **Instal Ekstensi:** Buka VS Code, masuk ke tab *Extensions* (Ctrl+Shift+X), cari **PlatformIO IDE**, lalu instal. Tunggu hingga proses instalasi komponen inti selesai, kemudian *restart* VS Code.
+ 3. **Buka Proyek:** Klik ikon PlatformIO (kepala semut) di menu kiri, pilih **Open Project**, dan arahkan ke folder repositori ini.
+ 4. **Konfigurasi Otomatis:** PlatformIO akan membaca *file* platformio.ini untuk mengatur CPU ESP32 berjalan di kecepatan 240MHz dan mengunduh pustaka secara otomatis (seperti ESP32-A2DP).
+ 5. **Eksekusi:** Sambungkan ESP32, klik tombol **Build (Ikon Centang)** di baris bawah layar untuk memverifikasi kode, lalu klik **Upload (Ikon Panah Kanan)** untuk memasukkan program.
 ### Opsi B: Instalasi MicroPython via Thonny IDE
-Metode ini menggunakan *Custom Firmware* MicroPython yang telah disisipkan modul C untuk menangani *decoding* Bluetooth di latar belakang.
- 1. **Flash Firmware:** Pertama, ESP32 harus di-*flash* dengan *custom firmware* (misalnya firmware_custom_a2dp.bin) menggunakan *tool* seperti esptool.py.
- 2. **Unduh IDE:** Instal Thonny IDE.
- 3. **Konfigurasi Interpreter:** Buka Thonny, pergi ke **Tools > Options > Interpreter**. Pilih **MicroPython (ESP32)** dan pilih *Port* COM/USB yang sesuai dengan perangkat Anda.
- 4. **Unggah Kode:** Buka *file* main.py dari repositori ini di Thonny. Klik tombol **Save (Ikon Disket)**, pilih *MicroPython device*, dan simpan dengan nama main.py agar langsung berjalan saat ESP32 dinyalakan.
-## ⚖️ Analisis Hardware: DAC Internal vs DAC Eksternal (I2S)
-Sebelum merakit komponen, penting untuk memahami perbedaan kapabilitas konversi digital-ke-analog (DAC) pada sistem ini.
+Metode ini bergantung pada *Custom Firmware* MicroPython yang telah "disuntikkan" modul bahasa C khusus untuk membongkar paket audio Bluetooth di latar belakang.
+ 1. **Flash Firmware Utama:** ESP32 wajib di-*flash* terlebih dahulu menggunakan *custom firmware* (misalnya firmware_custom_a2dp.bin) melalui perintah esptool.py.
+ 2. **Siapkan IDE:** Instal Thonny IDE.
+ 3. **Atur Interpreter:** Buka Thonny, navigasi ke **Tools > Options > Interpreter**. Pilih **MicroPython (ESP32)** dan pastikan *Port* yang dipilih sesuai dengan kabel USB Anda.
+ 4. **Simpan Kode:** Buka skrip main.py dari repositori ini ke dalam Thonny. Klik tombol **Save**, lalu pilih *"MicroPython device"*, dan simpan dengan nama persis main.py agar ESP32 langsung menjalankannya setiap kali dihidupkan.
+## ⚖️ Analisis Perbandingan: DAC Internal vs DAC Eksternal
+Sebelum merakit, mari bedah perbedaan kapabilitas fisik dari komponen konversi audio (Digital ke Analog) pada sistem ini.
+### 📉 Karakteristik DAC Internal (ESP32 Built-in)
+ * **Keuntungan:** Rangkaian sangat sederhana; tidak membutuhkan IC tambahan (menghemat biaya dan ruang).
+ * **Kerugian (Kualitas Suara):** Karena hanya beresolusi 8-Bit, kurva audionya kasar dan menghasilkan *Quantization Noise* (desis pasir) yang konstan.
+ * **Kerugian (Tenaga):** Sinyal analog yang keluar sangat lemah dan tidak mampu menggerakkan *speaker* secara langsung tanpa *amplifier* tambahan. Sangat rentan terhadap gangguan kelistrikan (*ground loop*).
+### 📈 Karakteristik DAC Eksternal (Modul MAX98357A I2S)
+ * **Keuntungan (Kualitas Suara):** Menerima data digital murni tanpa distorsi. Memiliki resolusi tinggi (16-Bit hingga 32-Bit) yang menghasilkan suara *High-Fidelity* jernih, setara kualitas CD.
+ * **Keuntungan (Tenaga):** Dilengkapi dengan *Amplifier* Kelas D internal berdaya 3 Watt, siap langsung dicolokkan ke membran *speaker* dengan keluaran suara yang menggelegar dan *bass* yang padat.
+ * **Kerugian:** Membutuhkan modul *hardware* tambahan dan pengkabelan jalur digital (I2S) yang presisi.
+## 🧪 Percobaan 1: Pembuktian Konsep Menggunakan DAC Internal
+Eksperimen pertama ini bertujuan untuk memvalidasi bahwa sistem perangkat lunak mampu menerima sinyal Bluetooth. Kita akan menggunakan jalur analog bawaan (DAC Internal).
+Untuk meminimalisir *noise* frekuensi tinggi bawaan cip ESP32, kita menyisipkan komponen pasif (Resistor 12k Ohm) sebagai bentuk sederhana dari *Low-Pass Filter*.
+### 📦 Daftar Barang yang Dibutuhkan (Percobaan 1)
 
-| Fitur | DAC Internal (ESP32 Built-in) | DAC Eksternal (MAX98357A I2S) |
+| Komponen | Jumlah | Fungsi |
 | :--- | :--- | :--- |
-| **Resolusi Audio** | 8-Bit (Tangga gelombang sangat kasar) | 16-Bit hingga 32-Bit (Sangat halus) |
-| **Kualitas Suara** | Penuh desis (*Quantization Noise*) & *Bass* tipis | Sangat jernih, rentang dinamis penuh (*Hi-Fi*) |
-| **Kekuatan Output** | Sangat lemah (Hanya sinyal level baris/Aux) | Sangat kuat (Built-in Amplifier Kelas D 3W) |
-| **Hambatan Fisik** | Rentan terhadap interferensi sirkuit (*EMI*) | Transmisi data digital murni kebal gangguan |
-| **Kompleksitas** | Mudah, hemat komponen (hanya resistor) | Butuh IC ekstra & kabel digital (I2S) | <br> ## 🧪 Percobaan 1: Menggunakan DAC Internal ESP32 <br> Meskipun secara akustik tidak ideal, menggunakan DAC bawaan ESP32 (GPIO 25 & 26) adalah cara termudah untuk membuktikan bahwa sistem perangkat lunak dapat menerima dan mengarahkan aliran audio Bluetooth. <br> Untuk mengurangi *switching noise* dari sirkuit internal, kita menerapkan modifikasi *hardware* sederhana berupa pemasangan **Passive Low-Pass Filter** menggunakan resistor dengan nilai hambatan tinggi. <br> ### Barang yang Dibutuhkan (Eksperimen DAC Internal) <br> * 1x **ESP32 Development Board** (NodeMCU-32S / DOIT DevKit V1) <br> * 2x **Resistor 12k Ohm** (Berfungsi sebagai *attenuator* & filter desis dasar) <br> * 1x Modul Rotary Encoder **KY-040** (Kendali Volume) <br> * 1x Push Button / Tactile Switch (Kendali Mode) <br> * 1x Speaker Pasif / Modul Amplifier Eksternal Biasa <br> * Kabel Jumper <br> ### Skema Sambungan Kabel (Wiring) Percobaan 1 <br> Pada konfigurasi ini, isyarat suara *Stereo* dikeluarkan langsung dari ESP32. Resistor 12k Ohm **wajib dipasang secara seri** (menjadi jembatan) antara pin GPIO ESP32 dan terminal masukan (*input*) kabel *speaker/amplifier*. <br> #### 1. Jalur Audio Analog (DAC Internal)
-| ESP32 Pin | Komponen Pasif | Tujuan Output | Fungsi |
+| **ESP32 Dev Board** | 1 | Otak utama (*NodeMCU-32S / DOIT DevKit V1*) |
+| **Resistor 12k Ohm** | 2 | Peredam daya dan *filter* desis dasar |
+| **KY-040 Rotary Encoder** | 1 | Pemutar untuk kendali volume digital |
+| **Tactile Push Button** | 1 | Tombol pengatur Mode (WLAN / Bluetooth / Standby) |
+| **Speaker Pasif** | 1 | Pengeras suara eksternal (Disarankan menggunakan modul amplifier tambahan untuk eksperimen ini) | <br> ### 🔌 Skema Perakitan (Wiring) Percobaan 1 <br> Perhatikan bahwa skema ini dibagi menjadi dua bagian: jalur khusus audio dan jalur kendali antarmuka. <br> #### Tabel Wiring: Jalur Audio Analog (DAC Internal) <br> Pada jalur ini, **resistor dipasang secara seri**—artinya resistor bertindak sebagai jembatan yang menyambungkan pin keluaran ESP32 menuju kabel masukan *speaker/amplifier*.
+| ESP32 Pin Output | Pemasangan Komponen Pasif | Tujuan Akhir | Fungsi Fisik |
 | :--- | :--- | :--- | :--- |
-| **GPIO 25** | -> Resistor 12k Ohm -> | Input Audio Kiri (L) | Output DAC 1 (Saluran Kiri 8-bit) |
-| **GPIO 26** | -> Resistor 12k Ohm -> | Input Audio Kanan (R) | Output DAC 2 (Saluran Kanan 8-bit) |
-| **GND** | Tidak Ada | Ground Speaker/Amp | Referensi Tegangan Nol | <br> #### 2. Antarmuka Modul Kendali (Berlaku untuk semua percobaan)
-| ESP32 Pin | Komponen | Pin Komponen | Fungsi Utama |
+| **GPIO 25** | \rightarrow **Resistor 12k \Omega** \rightarrow | Input Audio (Kiri / L) | Sinyal Analog Saluran Kiri (8-Bit) |
+| **GPIO 26** | \rightarrow **Resistor 12k \Omega** \rightarrow | Input Audio (Kanan / R) | Sinyal Analog Saluran Kanan (8-Bit) |
+| **GND** | *(Sambungan langsung)* | GND Speaker/Amplifier | Referensi Nol Volt (Penutup Sirkuit) | <br> #### Tabel Wiring: Antarmuka Modul Kendali (KY-040 & Tombol Mode) <br> Modul antarmuka ini akan tetap sama konfigurasinya, baik untuk eksperimen DAC Internal maupun Eksternal. Pastikan suplai daya (VCC) KY-040 hanya masuk ke 3.3V, bukan 5V.
+| ESP32 Pin | Komponen Eksternal | Pin Komponen | Fungsi Perangkat Lunak |
 | :--- | :--- | :--- | :--- |
-| **GPIO 18** | KY-040 | CLK | Mendeteksi putaran volume |
-| **GPIO 19** | KY-040 | DT | Menentukan arah putaran volume |
-| **GPIO 21** | KY-040 | SW | Tombol *Soft Mute* (Tekan kenop) |
-| **GPIO 12** | Push Button | Kaki 1 | Mode Switch & Sleep (*Ext0 Wakeup*) |
-| **GND** | Push Button | Kaki 2 | Ground Pemicu Tombol |
-| **3.3V** | KY-040 | + (VCC) | Tegangan referensi *Pull-Up* KY-040 |
-| **GND** | KY-040 | GND | Ground KY-040 |
+| **GPIO 18** | Rotary Encoder KY-040 | CLK (Clock) | Membaca setiap klik putaran (*Volume*) |
+| **GPIO 19** | Rotary Encoder KY-040 | DT (Data) | Menentukan arah putaran (Naik/Turun) |
+| **GPIO 21** | Rotary Encoder KY-040 | SW (Switch) | Interupsi *Soft Mute* saat kenop ditekan |
+| **GPIO 12** | Tombol *Push Button* | Kaki 1 (Sisi A) | Kendali multi-mode (WLAN/Bluetooth) & Memicu *Deep Sleep Wakeup* |
+| **GND** | Tombol *Push Button* | Kaki 2 (Sisi B) | Ground untuk mendeteksi tekanan tombol |
+| **3.3V** | Rotary Encoder KY-040 | + (VCC) | Catu daya referensi sinyal (*Pull-up*) |
+| **GND** | Rotary Encoder KY-040 | GND | Ground modul KY-040 |
 
-*(Berlanjut ke Part 2 untuk implementasi solusi final menggunakan DAC Eksternal I2S...)*
+*(Bersambung ke Part 2: Rekonstruksi Sistem Final menggunakan DAC I2S MAX98357A...)*
