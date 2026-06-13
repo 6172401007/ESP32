@@ -1,5 +1,8 @@
 # Panduan Proyek ESP32 Bluetooth Speaker (Part 1: Setup & Internal DAC)
 Dokumentasi ini berisi instruksi teknis pembuatan receiver audio Bluetooth menggunakan ESP32. Proyek mendukung dua arsitektur perangkat lunak: C++ dan MicroPython.
+## 🌟 Pengakuan & Atribusi (Credits)
+Proyek ini sangat bergantung pada kapabilitas dekode radio Bluetooth Classic tingkat rendah yang luar biasa. Atribusi khusus dan ucapan terima kasih yang sebesar-besarnya diberikan kepada:
+ * **Phil Schatzmann (pschatzmann)**: Pembuat pustaka **ESP32-A2DP**. Pustaka inti inilah yang memungkinkan pemrosesan I2S dan dekompresi SBC Codec dapat berjalan dengan mulus di arsitektur ESP32. Seluruh sistem C++ dan *wrapper* MicroPython pada proyek ini dibangun dengan menjadikan pustaka tersebut sebagai mesin pemroses utama (*core engine*).
 ## 1. Instalasi Lingkungan Pengembangan
 Pilih salah satu metode instalasi berdasarkan bahasa pemrograman yang digunakan.
 ### Opsi A: C++ (Visual Studio Code & PlatformIO)
@@ -24,22 +27,20 @@ Tabel perbandingan teknis antara penggunaan DAC internal bawaan ESP32 dan modul 
 | Parameter | Internal DAC (ESP32 Built-in) | Eksternal DAC (MAX98357A I2S) |
 | :--- | :--- | :--- |
 | **Kelebihan** | Komponen minimal, tidak butuh IC tambahan, wiring sederhana | Kualitas audio presisi (16-bit murni), output daya tinggi (built-in Amp Kelas D 3W) |
-| **Kekurangan** | Output hanya 8-bit, rentan *quantization noise* (desis), output daya sinyal sangat lemah | Membutuhkan modul hardware tambahan, wiring jalur digital I2S harus presisi | <br> ## 3. Percobaan 1: Penggunaan Internal DAC <br> Percobaan ini merupakan *proof-of-concept* fungsionalitas A2DP sink pada ESP32 tanpa antarmuka kendali tambahan. Output langsung menggunakan pin DAC bawaan yang dilewatkan pada *passive low-pass filter* (resistor). 
-### Daftar Kebutuhan Komponen
+| **Kekurangan** | Output hanya 8-bit, rentan *quantization noise* (desis), output daya sinyal sangat lemah | Membutuhkan modul hardware tambahan, wiring jalur digital I2S harus presisi | <br> ## 3. Percobaan 1: Penggunaan Internal DAC <br> Percobaan ini merupakan *proof-of-concept* fungsionalitas A2DP sink pada ESP32 tanpa antarmuka kendali tambahan. Output langsung menggunakan pin DAC bawaan yang dilewatkan pada *passive low-pass filter* (resistor). <br> ### Daftar Kebutuhan Komponen
 | Komponen | Jumlah |
 | :--- | :--- |
 | **ESP32 Dev Board** | 1 |
 | **Resistor 12k Ohm** | 2 |
 | **Modul Amplifier Eksternal** | 1 |
-| **Speaker Pasif** | 1 | 
-### Skema Sambungan (Wiring) <br> Resistor 12k Ohm dipasang secara seri pada jalur output audio. Tidak ada tombol atau *rotary encoder* pada tahap ini.
+| **Speaker Pasif** | 1 | <br> ### Skema Sambungan (Wiring) <br> Resistor 12k Ohm dipasang secara seri pada jalur output audio. Tidak ada tombol atau *rotary encoder* pada tahap ini.
 | ESP32 Pin Output | Pemasangan Pasif | Tujuan | Keterangan |
 | :--- | :--- | :--- | :--- |
-| **GPIO 25** | Seri dengan **Resistor 12k Ohm ** | Input Amplifier (L / Kiri) | Output DAC Channel 1 (8-Bit) |
-| **GPIO 26** | Seri dengan **Resistor 12k Ohm** | Input Amplifier (R / Kanan) | Output DAC Channel 2 (8-Bit) |
+| **GPIO 25** | Seri dengan **Resistor 12k \Omega** | Input Amplifier (L / Kiri) | Output DAC Channel 1 (8-Bit) |
+| **GPIO 26** | Seri dengan **Resistor 12k \Omega** | Input Amplifier (R / Kanan) | Output DAC Channel 2 (8-Bit) |
 | **GND** | Langsung | GND Amplifier | Referensi Ground |
 
-## 4. Solusi Final: Implementasi Eksternal DAC (I2S) dan Kendali Volume
+## 4. Solusi: Implementasi Eksternal DAC (I2S) dan Kendali Volume
 Bagian ini mendokumentasikan implementasi akhir menggunakan transmisi digital murni melalui bus I2S menuju modul DAC eksternal, lengkap dengan antarmuka kendali volume fisik. Penggunaan resistor 12k Ohm dari percobaan sebelumnya ditiadakan sepenuhnya.
 ### Daftar Kebutuhan Komponen
 
