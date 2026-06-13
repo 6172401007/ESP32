@@ -45,4 +45,43 @@ Pada fase ini, **semua antarmuka kendali (seperti volume fisik atau tombol mode)
 | **GPIO 26** | \rightarrow **Resistor 12k \Omega** \rightarrow | Input Audio (Kanan / R) | Sinyal Analog Saluran Kanan (8-Bit) |
 | **GND** | *(Sambungan langsung kabel)* | GND Amplifier/Speaker | Referensi Nol Volt (Penutup Sirkuit) |
 
-*(Bersambung ke Part 2: Solusi Final menggunakan DAC Eksternal I2S MAX98357A beserta integrasi Rotary Encoder & Tombol Multifungsi...)*
+## 🚀 Part 2: Solusi Final (Transmisi Digital I2S via DAC Eksternal)
+Melanjutkan dari Eksperimen 1, kita menyadari bahwa DAC internal 8-bit ESP32 memiliki keterbatasan hukum fisika yang menyebabkan desis kuantisasi dan kurangnya daya. Oleh karena itu, pada tahap final ini, kita melakukan rekonstruksi arsitektur menuju sistem digital murni (*End-to-End Digital Audio*).
+Pada fase final ini, **penggunaan Resistor 12k Ohm dihilangkan sepenuhnya**. Data audio tidak lagi diubah menjadi analog di dalam ESP32, melainkan dikirim dalam bentuk biner mentah (16-bit) melalui bus I2S menuju modul DAC Eksternal (MAX98357A). Sistem ini juga mengintegrasikan *Rotary Encoder* untuk kendali volume presisi dan tombol fisik untuk manajemen daya/mode.
+### 📦 Daftar Barang yang Dibutuhkan (Solusi Final)
+
+| Komponen | Jumlah | Fungsi |
+| :--- | :--- | :--- |
+| **ESP32 Dev Board** | 1 | Otak utama pemrosesan *Dual-Core* (Dekode A2DP & UI) |
+| **MAX98357A Module** | 1 | I2S DAC + Amplifier Kelas D 3W (Mengubah digital ke analog dan menguatkan sinyal) |
+| **KY-040 Rotary Encoder** | 1 | Kendali volume putar (*Quadrature*) dan *Soft Mute* |
+| **Tactile Push Button** | 1 | Tombol pengatur Mode (WLAN / Bluetooth) & *Deep Sleep* |
+| **Speaker Pasif** | 1 | Pengeras suara 4 Ohm / 8 Ohm (Maksimal 3 Watt) |
+| **Kabel Jumper** | Secukupnya | Menghubungkan jalur komunikasi digital dan daya | <br> ### 🔌 Skema Perakitan (Wiring) Solusi Final <br> Perakitan dipecah menjadi dua segmen: **Jalur Audio Digital (I2S)** dan **Jalur Kendali Antarmuka (UI)**. Pastikan setiap sambungan kuat karena komunikasi I2S membutuhkan integritas sinyal berkecepatan tinggi. <br> #### 1. Wiring Jalur Audio Digital (I2S ke MAX98357A) <br> Jalur ini murni mengalirkan data logika (3.3V). Pin keluaran dari ESP32 langsung dihubungkan ke pin input MAX98357A tanpa komponen pasif (tanpa resistor/kapasitor) di tengah jalur.
+| ESP32 Pin | MAX98357A Pin | Fungsi Komunikasi I2S |
+| :--- | :--- | :--- |
+| **GPIO 27** | BCLK | *Bit Clock* (Metronom sinkronisasi data per bit) |
+| **GPIO 26** | LRC | *Left/Right Clock / Word Select* (Penanda kanal Kiri/Kanan) |
+| **GPIO 25** | DIN | *Data Input* (Aliran *payload* audio digital 16-bit) |
+| **VIN / 5V** | VIN | Catu Daya Utama Amplifier (Disarankan menggunakan arus 5V untuk daya maksimal) |
+| **GND** | GND | Ground Referensi Bersama | <br> *(Catatan: Pin SD dan GAIN pada MAX98357A dibiarkan kosong/tidak tersambung. Secara default sistem akan mencampur saluran stereo Kiri & Kanan menjadi Mono untuk 1 Speaker dengan penguatan standar 9dB).* <br> #### 2. Wiring Modul Kendali (KY-040 & Tombol Multifungsi) <br> Pemasangan antarmuka ini krusial untuk mengeksekusi fitur-fitur seperti interpolasi *Soft Fading* volume dan perpindahan mode. **Penting:** Pastikan VCC KY-040 masuk ke jalur 3.3V, bukan 5V, agar aman bagi pin GPIO ESP32.
+| ESP32 Pin | Komponen Eksternal | Pin Komponen | Fungsi Perangkat Lunak |
+| :--- | :--- | :--- | :--- |
+| **GPIO 18** | Rotary Encoder KY-040 | CLK (Clock) | Sinyal *Quadrature A* (Mendeteksi setiap klik putaran) |
+| **GPIO 19** | Rotary Encoder KY-040 | DT (Data) | Sinyal *Quadrature B* (Mendeteksi arah putaran Naik/Turun) |
+| **GPIO 21** | Rotary Encoder KY-040 | SW (Switch) | Interupsi *Soft Mute* (Mengurangi volume ke 0 secara perlahan saat kenop ditekan) |
+| **GPIO 12** | Tombol *Push Button* | Kaki 1 (Sisi A) | Kendali Mode & *Deep Sleep* |
+| **GND** | Tombol *Push Button* | Kaki 2 (Sisi B) | Ground untuk pemicu tekanan tombol |
+| **3.3V** | Rotary Encoder KY-040 | + (VCC) | Catu daya tegangan referensi *Pull-up* |
+| **GND** | Rotary Encoder KY-040 | GND | Ground utama modul KY-040 |
+
+### 🎛️ Fitur Antarmuka Pengguna (UI) & Manajemen Daya
+Arsitektur pada fase final ini mengizinkan kontrol tingkat komersial yang mulus tanpa mengganggu *streaming* audio yang sedang berjalan:
+ 1. **Kendali Volume Pintar (KY-040):**
+   * **Putar:** Mengubah volume. Algoritma *Exponential Moving Average (EMA)* memastikan transisi nilai terjadi secara merayap halus (*Soft Fading*).
+   * **Tekan Kenop (Klik):** Memicu fitur *Soft Mute*. Suara tidak putus mendadak, melainkan meluncur turun hingga senyap (dan sebaliknya saat di-*unmute*).
+   * **Auto-Unmute:** Jika *speaker* dalam keadaan *Mute*, memutar kenop volume akan otomatis membatalkan status *Mute* dan mengembalikan suara mengikuti level yang baru diputar.
+ 2. **Tombol Multifungsi (GPIO 12):**
+   * **Tekan Singkat (< 2 Detik):** Memicu *Soft Reboot* untuk berpindah secara aman dari **Mode Bluetooth A2DP** ke **Mode WLAN (Web Radio)**, dan sebaliknya saat ditekan kembali.
+   * **Tekan Tahan (> 3 Detik):** Menyimpan *state* terakhir ke dalam memori *Flash*, memutuskan transmisi audio, dan memasukkan ESP32 ke dalam mode **Ultra Low Power (ULP) Deep Sleep / Standby**.
+   * **Wakeup:** Saat dalam mode *Deep Sleep*, menekan tombol ini (GPIO 12) akan membangunkan mikrokontroler kembali ke mode operasional penuh.
