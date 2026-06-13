@@ -27,13 +27,17 @@ Tabel perbandingan teknis antara penggunaan DAC internal bawaan ESP32 dan modul 
 | Parameter | Internal DAC (ESP32 Built-in) | Eksternal DAC (MAX98357A I2S) |
 | :--- | :--- | :--- |
 | **Kelebihan** | Komponen minimal, tidak butuh IC tambahan, wiring sederhana | Kualitas audio presisi (16-bit murni), output daya tinggi (built-in Amp Kelas D 3W) |
-| **Kekurangan** | Output hanya 8-bit, rentan *quantization noise* (desis), output daya sinyal sangat lemah | Membutuhkan modul hardware tambahan, wiring jalur digital I2S harus presisi | <br> ## 3. Percobaan 1: Penggunaan Internal DAC <br> Percobaan ini merupakan *proof-of-concept* fungsionalitas A2DP sink pada ESP32 tanpa antarmuka kendali tambahan. Output langsung menggunakan pin DAC bawaan yang dilewatkan pada *passive low-pass filter* (resistor). <br> ### Daftar Kebutuhan Komponen
+| **Kekurangan** | Output hanya 8-bit, rentan *quantization noise* (desis), output daya sinyal sangat lemah | Membutuhkan modul hardware tambahan, wiring jalur digital I2S harus presisi |
+## 3. Percobaan 1: Penggunaan Internal DAC 
+Percobaan ini merupakan *proof-of-concept* fungsionalitas A2DP sink pada ESP32 tanpa antarmuka kendali tambahan. Output langsung menggunakan pin DAC bawaan yang dilewatkan pada *passive low-pass filter* (resistor). <br> ### Daftar Kebutuhan Komponen
 | Komponen | Jumlah |
 | :--- | :--- |
 | **ESP32 Dev Board** | 1 |
 | **Resistor 12k Ohm** | 2 |
 | **Modul Amplifier Eksternal** | 1 |
-| **Speaker Pasif** | 1 | <br> ### Skema Sambungan (Wiring) <br> Resistor 12k Ohm dipasang secara seri pada jalur output audio. Tidak ada tombol atau *rotary encoder* pada tahap ini.
+| **Speaker Pasif** | 1 | 
+### Skema Sambungan (Wiring) 
+Resistor 12k Ohm dipasang secara seri pada jalur output audio. Tidak ada tombol atau *rotary encoder* pada tahap ini.
 | ESP32 Pin Output | Pemasangan Pasif | Tujuan | Keterangan |
 | :--- | :--- | :--- | :--- |
 | **GPIO 25** | Seri dengan **Resistor 12k \Omega** | Input Amplifier (L / Kiri) | Output DAC Channel 1 (8-Bit) |
