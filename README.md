@@ -1,4 +1,4 @@
-# Panduan Proyek ESP32 Bluetooth Speaker (Part 1: Setup & Internal DAC)
+# Panduan Proyek ESP32 Bluetooth & Wlan Speaker
 Dokumentasi ini berisi instruksi teknis pembuatan receiver audio Bluetooth menggunakan ESP32. Proyek mendukung dua arsitektur perangkat lunak: C++ dan MicroPython.
 ## 🌟 Pengakuan & Atribusi (Credits)
 Proyek ini sangat bergantung pada kapabilitas dekode radio Bluetooth Classic tingkat rendah yang luar biasa. Atribusi khusus dan ucapan terima kasih yang sebesar-besarnya diberikan kepada:
