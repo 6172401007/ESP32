@@ -56,7 +56,9 @@ Bagian ini mendokumentasikan implementasi akhir menggunakan transmisi digital mu
 | **GPIO 26** | LRC | Left/Right Clock (Word Select) |
 | **GPIO 25** | DIN | Data Input (Aliran sinyal audio digital 16-bit) |
 | **5V / VIN** | VIN | Catu daya operasional modul DAC/Amp |
-| **GND** | GND | Referensi Ground bersama | <br> *(Catatan: Pin SD dan GAIN pada MAX98357A dibiarkan tidak terhubung. Konfigurasi default ini akan mencampur sinyal stereo menjadi mono standar dengan penguatan internal 9dB).* <br> #### B. Wiring Antarmuka Volume (Rotary Encoder) <br> Sumber tegangan utama untuk modul KY-040 wajib menggunakan pin 3.3V dari ESP32 untuk menghindari masuknya tegangan 5V ke dalam pin GPIO mikrokontroler.
+| **GND** | GND | Referensi Ground bersama | *(Catatan: Pin SD dan GAIN pada MAX98357A dibiarkan tidak terhubung. Konfigurasi default ini akan mencampur sinyal stereo menjadi mono standar dengan penguatan internal 9dB).* 
+#### B. Wiring Antarmuka Volume (Rotary Encoder) 
+Sumber tegangan utama untuk modul KY-040 wajib menggunakan pin 3.3V dari ESP32 untuk menghindari masuknya tegangan 5V ke dalam pin GPIO mikrokontroler.
 | ESP32 Pin | Modul Eksternal | Pin Modul | Parameter Fungsi |
 | :--- | :--- | :--- | :--- |
 | **GPIO 18** | KY-040 | CLK | Input sinyal *Quadrature A* (Clock) |
