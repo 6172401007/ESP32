@@ -36,7 +36,9 @@ Pada fase ini, **semua antarmuka kendali (seperti volume fisik atau tombol mode)
 | :--- | :--- | :--- |
 | **ESP32 Dev Board** | 1 | Otak utama (*NodeMCU-32S / DOIT DevKit V1*) |
 | **Resistor 12k Ohm** | 2 | Peredam daya dan *filter* pasif untuk menghaluskan kurva 8-bit |
-| **Modul Amplifier/Speaker Aktif** | 1 | Penguat suara akhir (karena output ESP32 terlalu lemah) | <br> ### 🔌 Skema Perakitan (Wiring) Percobaan 1 <br> Pada konfigurasi minimalis ini, pin GPIO 25 dan 26 ESP32 diatur sebagai keluaran *DAC channel 1* dan *DAC channel 2*. <br> **Perhatian:** Resistor **wajib dipasang secara seri**—artinya resistor tersebut bertindak sebagai jembatan yang berada tepat di tengah-tengah antara pin ESP32 dan kabel masukan (input L/R) menuju amplifier Anda.
+| **Modul Amplifier/Speaker Aktif** | 1 | Penguat suara akhir (karena output ESP32 terlalu lemah) |
+
+### 🔌 Skema Perakitan (Wiring) Percobaan 1 Pada konfigurasi minimalis ini, pin GPIO 25 dan 26 ESP32 diatur sebagai keluaran *DAC channel 1* dan *DAC channel 2*. <br> **Perhatian:** Resistor **wajib dipasang secara seri**—artinya resistor tersebut bertindak sebagai jembatan yang berada tepat di tengah-tengah antara pin ESP32 dan kabel masukan (input L/R) menuju amplifier Anda.
 | ESP32 Pin Output | Komponen Pasif | Tujuan Akhir | Fungsi Fisik |
 | :--- | :--- | :--- | :--- |
 | **GPIO 25** | \rightarrow **Resistor 12k \Omega** \rightarrow | Input Audio (Kiri / L) | Sinyal Analog Saluran Kiri (8-Bit) |
