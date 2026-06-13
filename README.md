@@ -73,4 +73,40 @@ Perangkat lunak membaca input dari modul KY-040 untuk mengeksekusi parameter ins
    Mendeteksi arah putaran untuk menyesuaikan nilai amplitudo audio. Kode menerapkan algoritma *Exponential Moving Average* (EMA) agar transisi perubahan volume terjadi secara halus (*Soft Fading*), mencegah lonjakan output mendadak yang dapat merusak speaker.
  2. **Soft Mute (KY-040 Klik):**
    Penekanan kenop volume memicu rutin *Mute*. Sinyal diturunkan ke nilai nol secara bertahap (*ramp-down*) dan tidak dipotong paksa. Memutar kenop secara otomatis akan membatalkan status *Mute* dan mengembalikan volume ke level sesuai putaran baru (*Auto-Unmute*).
-*(Bersambung ke Part 3: Integrasi Push Button untuk Mode WLAN, Soft Reboot, dan Manajemen Daya Deep Sleep)*
+
+## 6. Manajemen Daya (Deep Sleep) dan Multi-Mode Transmisi
+Fase akhir dari eksperimen ini adalah penambahan fungsionalitas penghematan daya menggunakan fitur Ultra Low Power (ULP) bawaan ESP32 dan kemampuan perpindahan mode transmisi dari Bluetooth A2DP ke WLAN (Web Radio). Seluruh logika ini dikendalikan oleh satu tombol fisik (*Push Button*).
+### Komponen Tambahan
+
+| Komponen | Jumlah | Keterangan |
+| :--- | :--- | :--- |
+| **Push Button (Tactile)** | 1 | Saklar sesaat (*momentary switch*) untuk pemicu interupsi perangkat keras | 
+### Skema Sambungan (Wiring) Push Button 
+Pin GPIO 12 dipilih secara spesifik karena pin ini merupakan pin RTC (Real-Time Clock) yang mendukung pemicu *Wakeup* dari status *Deep Sleep* (ext0_wakeup).
+| ESP32 Pin | Komponen Eksternal | Pin Komponen | Parameter Fungsi |
+| :--- | :--- | :--- | :--- |
+| **GPIO 12** | Push Button | Kaki 1 | Input logika kendali mode & pemicu interupsi RTC Wakeup |
+| **GND** | Push Button | Kaki 2 | Memberikan logika LOW (0V) saat tombol ditekan |
+
+*(Catatan: Konfigurasi kode harus mengaktifkan internal Pull-Up pada GPIO 12. Tombol akan memicu sinyal LOW / *Active-Low*).*
+### Logika Eksekusi Push Button & ULP
+Sistem akan menghitung durasi penekanan tombol (*debounce* dan *timer*) untuk mengeksekusi tiga instruksi berbeda:
+ 1. **Toggle Mode / Soft Reboot (Tekan Singkat < 2 Detik):**
+   * Saat tombol ditekan singkat, ESP32 akan menulis flag *state* mode berikutnya (Bluetooth atau WLAN) ke dalam Non-Volatile Storage (NVS) atau memori Flash.
+   * Setelah flag tersimpan, sistem mengeksekusi perintah *Soft Reboot* (ESP.restart() atau machine.reset()).
+   * Saat *booting* kembali, ESP32 membaca flag dari NVS dan memutuskan apakah akan memuat modul Bluetooth A2DP Sink atau melakukan koneksi ke jaringan WiFi untuk *streaming* Web Radio.
+ 2. **Mode Standby / Deep Sleep (Tekan Tahan > 3 Detik):**
+   * Sistem mendeteksi penekanan panjang dan memulai rutin terminasi.
+   * Transmisi radio (Bluetooth/WiFi) dan bus I2S dihentikan.
+   * Perintah masuk ke *Deep Sleep* dipanggil. CPU utama dimatikan dan konsumsi daya sistem akan turun drastis ke tingkat mikroampere (\mu A), menyisakan hanya *RTC Coprocessor* yang menyala.
+ 3. **Hardware Wakeup (Dari status Deep Sleep):**
+   * Sebelum masuk ke mode *Deep Sleep*, sistem dikonfigurasi dengan perintah esp_sleep_enable_ext0_wakeup(GPIO_NUM_12, 0).
+   * Saat ESP32 dalam keadaan tertidur, menekan Push Button yang sama akan memberikan sinyal LOW ke RTC GPIO 12.
+   * Sinyal ini secara instan membangunkan mikrokontroler dari *Deep Sleep* dan sistem akan melakukan siklus *booting* normal.
+## 7. Lisensi Proyek
+Proyek ini menggunakan lisensi *Open Source*.
+**MIT License**
+Copyright (c) 2026 Clement Korinthian
+Dengan ini diberikan izin, secara cuma-cuma, kepada siapa pun yang mendapatkan salinan perangkat lunak ini dan file dokumentasi terkait ("Perangkat Lunak"), untuk memperlakukan Perangkat Lunak tanpa batasan, termasuk namun tidak terbatas pada hak untuk menggunakan, menyalin, memodifikasi, menggabungkan, menerbitkan, mendistribusikan, mensublisensikan, dan/atau menjual salinan Perangkat Lunak, dan untuk mengizinkan orang kepada siapa Perangkat Lunak ini diberikan untuk melakukan hal tersebut, dengan tunduk pada ketentuan berikut:
+Pemberitahuan hak cipta di atas dan pemberitahuan izin ini harus disertakan dalam semua salinan atau bagian substansial dari Perangkat Lunak.
+PERANGKAT LUNAK DISEDIAKAN "SEBAGAIMANA ADANYA", TANPA JAMINAN APAPUN, TERSURAT MAUPUN TERSIRAT, TERMASUK NAMUN TIDAK TERBATAS PADA JAMINAN KELAYAKAN UNTUK DIPERDAGANGKAN, KESESUAIAN UNTUK TUJUAN TERTENTU DAN TIDAK ADANYA PELANGGARAN. DALAM HAL APAPUN PENULIS ATAU PEMEGANG HAK CIPTA TIDAK BERTANGGUNG JAWAB ATAS KLAIM, KERUSAKAN ATAU KEWAJIBAN LAINNYA, BAIK DALAM TINDAKAN KONTRAK, KESALAHAN ATAU LAINNYA, YANG TIMBUL DARI, DARI ATAU SEHUBUNGAN DENGAN PERANGKAT LUNAK ATAU PENGGUNAAN ATAU TRANSAKSI LAINNYA DALAM PERANGKAT LUNAK.
