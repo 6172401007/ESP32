@@ -1,4 +1,4 @@
-# High-Fidelity Bluetooth Speaker via ESP32 (Part 1: Setup & Eksperimen DAC Internal) 🔊
+# High-Fidelity Bluetooth Speaker via ESP32🔊
 Selamat datang di panduan proyek ESP32 Audio Receiver. Repositori ini berisi kode dan skema untuk memodifikasi *speaker* biasa menjadi sistem audio Bluetooth. Proyek ini mendukung dua lingkungan: **C++ (PlatformIO)** untuk performa maksimal, dan **MicroPython (Custom Firmware)** untuk pengembangan lapis atas yang cepat.
 ## 💻 Panduan Instalasi Lingkungan Pengembangan
 Pilih salah satu metode pengembangan di bawah ini sesuai dengan bahasa pemrograman yang ingin Anda gunakan.
